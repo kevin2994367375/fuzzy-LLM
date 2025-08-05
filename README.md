@@ -1,4 +1,4 @@
-# Fuzzy-LLM: An Interpretable Framework for Bearing Fault Diagnosis
+# Fuzzy-LLM: An Framework for Bearing Fault Diagnosis
 
 This repository contains the official implementation for the paper: **"FuzzyLLM: A Fuzzy Knowledge Enhanced Large Language Model for Interpretable Bearing Fault Diagnosis"**.
 
