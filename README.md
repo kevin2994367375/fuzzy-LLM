@@ -56,3 +56,69 @@ Generated code
 └── README.md                   # This file
 Use code with caution.
 ```
+**6. Command-Line Arguments & Configuration:**
+Of course. Here is a comprehensive guide to all command-line arguments in `main.py`, written in English and formatted in Markdown, perfectly suited for your `README.md`.
+
+The `main.py` script is designed to be highly configurable via command-line arguments. This allows for precise control over experiments without modifying the source code.
+
+Below is a detailed explanation of each available argument.
+
+### Core Control Parameters
+
+These arguments define the fundamental setup and strategy for each experiment.
+
+| Argument | Type | Default | Choices | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `--dataset` | str | `cwru` | `cwru`, `pu`, `hust` | Specifies which dataset to use for the experiment. |
+| `--strategy` | str | `fuzzy` | `numeric`, `fuzzy` | Sets the **input strategy**: `numeric` for scaled numerical text, `fuzzy` for semantic fuzzy text. |
+| `--use_soft_labels`| flag | `False` | N/A | If set, enables the **output strategy** of using KNN-generated soft labels and the hybrid loss function for training. |
+
+**Example:**
+```bash
+# Run an experiment on the PU dataset for the location task, using fuzzy inputs and soft labels.
+python3 main.py --dataset pu --criterion location --strategy fuzzy --use_soft_labels
+```
+
+### Model & Fine-tuning Parameters
+
+These arguments control the language model architecture and the specifics of the fine-tuning process.
+
+| Argument | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `--model_name` | str | `./models/Qwen2.5-3B-Instruct`| Path to a local model or a Hugging Face Hub model ID. |
+| `--tuning_method`| str | `lora` | The PEFT method to use. `lora` for 8-bit quantization, `qlora` for 4-bit. |
+| `--lora_r` | int | `16` | The rank (`r`) of the LoRA adapter matrices. |
+| `--lora_alpha` | int | `32` | The scaling factor for LoRA. Typically set to `2 * r`. |
+| `--lora_dropout`| float| `0.1` | The dropout probability for the LoRA layers. |
+
+### Training Hyperparameters
+
+These arguments control the behavior of the training loop.
+
+| Argument | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `--epochs` | int | `3` | The total number of training epochs. |
+| `--batch_size` | int | `8` | The number of samples per training batch. Adjust based on GPU memory. |
+| `--learning_rate`| float| `2e-5` | The initial learning rate for the AdamW optimizer. |
+| `--max_length` | int | `512` | The maximum token sequence length. Longer sequences will be truncated. |
+
+### Fuzzy Knowledge & Loss Parameters
+
+These are special parameters for the Fuzzy-LLM framework.
+
+| Argument | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `--fuzzy_config_name`| str | `quantile_based_5_levels`| The fuzzy encoding strategy to use from `config.yaml`. |
+| `--knn_k` | int | `10` | The number of neighbors (`k`) for the KNN soft label generator. |
+| `--soft_label_temperature`| float| `0.3` | The temperature `T` for sharpening soft labels (`T<1` sharpens, `T>1` smooths).|
+| `--loss_alpha` | float| `0.5` | The weight `α` for the KL-divergence component in the hybrid loss. `0.0` for CE only, `1.0` for KL only. |
+
+### Miscellaneous Parameters
+
+These arguments control file paths, data handling, and debugging features.
+
+| Argument | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `--config` | str | `config.yaml` | Path to the main YAML configuration file. |
+| `--data_dir` | str | `data/raw` | The root directory for the raw dataset files. |
+| `--output_dir` | str | `outputs` | The root directory where all experimental results will be saved. |
