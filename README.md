@@ -18,6 +18,7 @@ git clone https://github.com/kevin2994367375/fuzzy-LLM.git
 cd FuzzyLLM
 Use code with caution.
 Markdown
+```
 **2. Create and activate the Conda environment:**
 Generated bash
 conda create -n fuzzyllm python=3.10
