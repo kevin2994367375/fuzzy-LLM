@@ -1,0 +1,16 @@
+pandas
+numpy
+scikit-learn
+pywavelets
+PyYAML 
+tqdm
+torch
+torchvision
+torchaudio
+transformers
+accelerate
+bitsandbytes
+peft 
+huggingface-hub
+matplotlib
+seaborn
