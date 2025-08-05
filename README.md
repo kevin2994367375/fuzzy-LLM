@@ -29,9 +29,9 @@ Visit the official PyTorch website to get the correct installation command for y
 conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
 ```
 **4. Install all other dependencies:**
-```
-pip install -r requirements.txt
 ```bash
+pip install -r requirements.txt
+```
 **5. Download Models (Optional but Recommended):**
 To avoid repeated downloads, you can pre-download the language models you intend to use and place them in a ./models/ directory. For gated models like Llama-3 or Gemma, you must first request access on their respective Hugging Face pages and log in via the terminal:
 Generated bash
