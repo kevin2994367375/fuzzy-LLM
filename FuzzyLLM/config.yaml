@@ -1,0 +1,150 @@
+# ===================================================================
+#  Self-Adaptive Fuzzy-LLM Project Configuration
+# ===================================================================
+
+# 1. 全局设置: 在这里切换整个项目使用的数据集
+#    可选值: 'cwru', 'pu'
+active_dataset: 'cwru'
+
+# 2. 数据集特定信息
+datasets:
+  cwru:
+    name: 'CWRU'
+    raw_path: 'data/raw/CWRU'
+    # 定义CWRU数据集的数值特征列名。
+    # data_loader.py会生成这些名称的列。
+    numeric_features:
+      - 'wavelet_2_std'
+      - 'wavelet_3_std'
+      - 'wavelet_3_kurtosis'
+      - 'wavelet_2_kurtosis'
+      - 'wavelet_0_std'
+      - 'wavelet_1_std'
+      - 'wavelet_0_kurtosis'
+      - 'env_bsf_amp'
+      - 'env_bpfo_amp'
+      - 'wavelet_1_kurtosis'
+      - 'perm_entropy'
+      
+  pu:
+    name: 'Paderborn University'
+    raw_path: 'data/raw/PU'
+    numeric_features:
+      - 'wavelet_0_std'
+      - 'wavelet_3_std'
+      - 'wavelet_2_std'
+      - 'wavelet_1_std'
+      - 'wavelet_0_mean'
+      - 'wavelet_3_kurtosis'
+      - 'wavelet_0_kurtosis'
+      - 'env_bsf_amp'
+      - 'wavelet_2_kurtosis'
+      - 'env_bpfo_amp'
+      
+  xjtu: # The primary identifier for the Xian Jiaotong University dataset
+    name: 'Xian Jiaotong University'
+    raw_path: 'data/raw/XJTU' # Ensure your data is in this folder
+    op_condition_features:
+      - 'op_speed' # <-- 新增：转速特征
+      - 'op_load'  # <-- 新增：负载特征
+    signal_features:
+      - 'wavelet_0_mean'
+      - 'wavelet_0_std'
+      - 'wavelet_0_kurtosis'
+      - 'wavelet_0_skew'
+      - 'wavelet_1_mean'
+      - 'wavelet_1_std'
+      - 'wavelet_1_kurtosis'
+      - 'wavelet_1_skew'
+      - 'wavelet_2_mean'
+      - 'wavelet_2_std'
+      - 'wavelet_2_kurtosis'
+      - 'wavelet_2_skew'
+      - 'wavelet_3_mean'
+      - 'wavelet_3_std'
+      - 'wavelet_3_kurtosis'
+      - 'wavelet_3_skew'
+      - 'env_bpfi_amp'
+      - 'env_bpfo_amp'
+      - 'env_bsf_amp'
+      - 'perm_entropy'
+
+  hust:
+    name: 'Huazhong University of Science and Technology'
+    raw_path: 'data/raw/HUST'
+    op_condition_features:
+      - 'op_speed' # <-- 新增：转速特征
+    signal_features:
+      - x_wavelet_1_std
+      - x_perm_entropy
+      - x_wavelet_2_std
+      - x_wavelet_2_kurtosis
+      - z_wavelet_3_kurtosis
+      - z_wavelet_0_std
+      - z_wavelet_1_std
+      - z_wavelet_0_kurtosis
+      - x_wavelet_3_std
+     
+
+prototype_generation_configs:
+  # 策略一：基于中位数，每个类别1个原型
+  median_based:
+    strategy: 'median'
+    description: "Use the median of each class as a single prototype."
+    params: {} # 无需额外参数
+
+  # 策略二：基于K-Means聚类，每个类别3个原型
+  kmeans_based:
+    strategy: 'kmeans'
+    description: "Use K-Means centroids as multiple prototypes for each class."
+    params:
+      k: 4 # 定义每个类别内部要找的聚类中心数量
+
+# 3. 自适应模糊编码器策略配置 (最核心的部分)
+adaptive_fuzzy_encoder_configs: # 注意这里加了个's'
+  # 策略一：基于分位数
+  quantile_based:
+    description: "Generates MFs using quantiles (min, 25%, 50%, 75%, max)."
+    membership_functions:
+      - { name: Low,    strategy: 'quantile', params: [0.0, 0.25, 0.5] }
+      - { name: Medium, strategy: 'quantile', params: [0.25, 0.5, 0.75] }
+      - { name: High,   strategy: 'quantile', params: [0.5, 0.75, 1.0] }
+
+  quantile_based_5_levels:
+    description: "A more granular 5-level fuzzy encoding."
+    membership_functions:
+      - name: Very_Low
+        strategy: 'quantile'
+        # a=min, b=12.5%分位数, c=25%分位数
+        params: [0.0, 0.125, 0.25]
+      - name: Low
+        strategy: 'quantile'
+        # a=12.5%, b=25%, c=50% (中位数)
+        params: [0.125, 0.25, 0.5]
+      - name: Medium
+        strategy: 'quantile'
+        # a=25%, b=50%, c=75%
+        params: [0.25, 0.5, 0.75]
+      - name: High
+        strategy: 'quantile'
+        # a=50%, b=75%, c=87.5%
+        params: [0.5, 0.75, 0.875]
+      - name: Very_High
+        strategy: 'quantile'
+        # a=75%, b=87.5%, c=max
+        params: [0.75, 0.875, 1.0]
+
+  # 策略二：基于均值和标准差
+  mean_std_based:
+    description: "Generates MFs using mean and standard deviation."
+    membership_functions:
+      - { name: Neg_Std,  strategy: 'mean_std', params: { center_offset: -1.5, width_factor: 0.5 } }
+      - { name: Near_Mean,strategy: 'mean_std', params: { center_offset: 0,    width_factor: 1.0 } }
+      - { name: Pos_Std,  strategy: 'mean_std', params: { center_offset: 1.5,  width_factor: 0.5 } }
+
+  # 策略三：一个更简单的两模糊集策略
+  binary_fuzzy:
+    description: "A simple binary fuzzy split (Low/High)."
+    membership_functions:
+      - { name: Low,  strategy: 'quantile', params: [0.0, 0.0, 0.5] } # From min to median
+      - { name: High, strategy: 'quantile', params: [0.5, 1.0, 1.0] } # From median to max
