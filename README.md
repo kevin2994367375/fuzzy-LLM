@@ -16,33 +16,28 @@ It is highly recommended to use a Conda environment to manage dependencies.
 ```bash
 git clone https://github.com/kevin2994367375/fuzzy-LLM.git
 cd FuzzyLLM
-Use code with caution.
-Markdown
 ```
 **2. Create and activate the Conda environment:**
-Generated bash
+```bash
 conda create -n fuzzyllm python=3.10
 conda activate fuzzyllm
-Use code with caution.
-Bash
+```
 **3. Install PyTorch with GPU support:**
 Visit the official PyTorch website to get the correct installation command for your specific CUDA version. For example:
-Generated bash
+```bash
 # Example for CUDA 12.1
 conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
-Use code with caution.
-Bash
+```
 **4. Install all other dependencies:**
-Generated bash
+```
 pip install -r requirements.txt
-Use code with caution.
-Bash
+```bash
 **5. Download Models (Optional but Recommended):**
 To avoid repeated downloads, you can pre-download the language models you intend to use and place them in a ./models/ directory. For gated models like Llama-3 or Gemma, you must first request access on their respective Hugging Face pages and log in via the terminal:
 Generated bash
 huggingface-cli login
 Use code with caution.
-Bash
+```bash
 📂 Project Structure
 Generated code
 .
@@ -60,3 +55,4 @@ Generated code
 ├── main.py                     # Main script for running a single experiment
 └── README.md                   # This file
 Use code with caution.
+```
