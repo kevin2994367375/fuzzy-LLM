@@ -173,24 +173,49 @@ def add_gaussian_noise(df, feature_cols, noise_level=0.0):
             df_noisy[col] = df_noisy[col] + noise
     return df_noisy
 
-def get_prompt_template(task, use_soft_labels, class_names):
+def get_prompt_template(task, use_soft_labels, class_names, input_strategy):
     """
-    Returns a prompt template dynamically based on the task and its specific classes.
+    Returns the final, refined, and contextualized prompt templates.
+    This version separates the instruction from the data placeholder.
     """
     if not class_names: return ""
-    if len(class_names) > 1:
-        class_options = ", ".join(class_names[:-1]) + f", or {class_names[-1]}"
-    else:
-        class_options = class_names[0]
-    prompt_prefix = "Based on the provided data,"
-    input_desc = "fuzzy feature analysis" if use_soft_labels else "numerical features"
-    if task == 'location': task_instruction = "identify the fault location"
-    elif task == 'severity': task_instruction = "evaluate the fault severity"
-    else: task_instruction = f"determine the {task.replace('_', ' ')}"
-    if use_soft_labels:
-        return f"You are a fuzzy logic expert. {prompt_prefix} {input_desc}, generate a JSON object representing the probability distribution for the fault: '{{user_message}}'. The keys must be {class_options}."
-    else:
-        return f"You are a fault diagnosis expert. {prompt_prefix} {input_desc}, {task_instruction}: '{{user_message}}'. Answer with only one of these options: {class_options}."
+    class_options = ", ".join(class_names[:-1]) + f", or {class_names[-1]}" if len(class_names) > 1 else class_names[0]
+    
+    if input_strategy == 'fuzzy':
+        instruction = (
+            "Role setup: You are an experienced bearing fault analyst specializing in fuzzy diagnostics. "
+            "You are provided with a linguistic summary of a bearing's vibration characteristics.\n\n"
+            "Task description: Your task is to interpret this fuzzy feature analysis and "
+            "determine the probability of different fault types. Please provide your diagnosis "
+            f"as a probability distribution over the following possible conditions: {class_options}."
+        )
+
+    elif input_strategy == 'numeric':
+        if use_soft_labels:
+            instruction = (
+                "Role setup: You are an experienced bearing fault analyst. You are provided with a set "
+                "of key numerical features extracted from a bearing's vibration signal.\n\n"
+                "Task description: Your task is to analyze these numerical features and determine the "
+                "probability of different fault types. Please provide your diagnosis as a "
+                f"probability distribution over the following possible conditions: {class_options}."
+            )
+        else: # Numeric-Hard
+            instruction = (
+                "Role setup: You are an experienced bearing fault analyst. You are provided with a set "
+                "of key numerical features extracted from a bearing's vibration signal.\n\n"
+                "Task description: Your task is to analyze these numerical features and classify the "
+                "health state of the bearing. Please provide only the single most likely fault type "
+                f"from the following options: {class_options}."
+            )
+            
+    if input_strategy == 'fuzzy':
+        data_template = "The analysis is as follows: '{user_message}'"
+    else: # numeric
+        data_template = "The feature set is as follows: '{user_message}'"
+
+    prompt_template = f"{instruction}\n\n{data_template}"
+    
+    return prompt_template
 
 def save_test_results_to_csv(test_df, predictions, probabilities, class_names, output_dir, label_col, text_col, filename_suffix=""):
     """
